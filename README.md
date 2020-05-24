@@ -4,6 +4,7 @@ This repository contains code and models for the paper, [BERT for Coreference Re
 The model architecture itself is an extension of the [e2e-coref](https://github.com/kentonl/e2e-coref) model.
 
 ## Setup
+* Best setup in a virtual environment, see https://docs.python-guide.org/dev/virtualenvs/
 * Install python3 requirements: `pip install -r requirements.txt`
 * `export data_dir=</path/to/data_dir>`
 * `./setup_all.sh`: This builds the custom kernels
@@ -19,6 +20,12 @@ Please download following files to use the *pretrained coreference models* on yo
 | SpanBERT-large | spanbert_large              | 79.6   |
 
 `./download_pretrained.sh <model_name>` (e.g,: bert_base, bert_large, spanbert_base, spanbert_large; assumes that `$data_dir` is set) This downloads BERT/SpanBERT models finetuned on OntoNotes. The original/non-finetuned version of SpanBERT weights is available in this [repository](https://github.com/facebookresearch/SpanBERT). You can use these models with `evaluate.py` and `predict.py` (the section on Batched Prediction Instructions)
+
+
+## Running
+*  Process input `python process_input.py`
+*  Predict output `python predict.py spanbert_base sample.in.json sample.out.json`
+*  Process output `python process_output.py`
 
 
 ## Training / Finetuning Instructions

@@ -18,7 +18,7 @@ from bert import tokenization
 # spanbert_large
 model_name = "spanbert_base"
 
-def process_input():
+def process_input(tokenizer, max_segment, text):
     # The Ontonotes data for training the model contains text from several sources
     # of very different styles. You need to specify the most suitable one out of:
     # "bc": broadcast conversation
@@ -30,9 +30,6 @@ def process_input():
     # "wb": web data
     genre = "nw"
 
-    text = [
-    '"I voted for Obama because he was most aligned with my values", she said.']
-
     data = {
         'doc_key': genre,
         'sentences': [["[CLS]"]],
@@ -42,17 +39,6 @@ def process_input():
         'subtoken_map': [0],
     }
 
-    # Determine Max Segment
-    max_segment = None
-    for line in open('experiments.conf'):
-        if line.startswith(model_name):
-            max_segment = True
-        elif line.strip().startswith("max_segment_len"):
-            if max_segment:
-                max_segment = int(line.strip().split()[-1])
-                break
-
-    tokenizer = tokenization.FullTokenizer(vocab_file="cased_config_vocab/vocab.txt", do_lower_case=False)
     subtoken_num = 0
     for sent_num, line in enumerate(text):
         raw_tokens = line.split()
@@ -92,11 +78,6 @@ def process_input():
 
     return data
 
-def write_data(file_name, data):      
-    with open(file_name, "w") as output_file:
-      output_file.write(json.dumps(data))
-      output_file.write("\n")
-
 def process_output(output):
   comb_text = [word for sentence in output['sentences'] for word in sentence]
 
@@ -108,7 +89,6 @@ def process_output(output):
       return (nmention, mtext)
 
   clusters = []
-  print('Clusters:')
   for cluster in output['predicted_clusters']:
       mapped = []
       for mention in cluster:
@@ -134,15 +114,26 @@ def run():
   start = time.time()
 
   saver = tf.train.Saver()
+  tokenizer = tokenization.FullTokenizer(vocab_file="cased_config_vocab/vocab.txt", do_lower_case=False)
+
+  # Determine Max Segment
+  max_segment = None
+  for line in open('experiments.conf'):
+      if line.startswith(model_name):
+          max_segment = True
+      elif line.strip().startswith("max_segment_len"):
+          if max_segment:
+              max_segment = int(line.strip().split()[-1])
+              break
 
   with tf.Session() as session:
     model.restore(session)
     print("\n***restored session...", time.time()-start)
     start = time.time()
-
-    example = process_input()
-    print("\n***process_input...", time.time()-start)
-    start = time.time()
+    
+    text = [
+    '"I voted for Obama because he was most aligned with my values", she said.']
+    example = process_input(tokenizer, max_segment, text)
 
     tensorized_example = model.tensorize_example(example, is_training=False)
     feed_dict = {i:t for i,t in zip(model.input_tensors, tensorized_example)}

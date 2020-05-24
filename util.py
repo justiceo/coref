@@ -7,7 +7,6 @@ import errno
 import codecs
 import collections
 import shutil
-import sys
 
 import numpy as np
 import tensorflow as tf
@@ -24,11 +23,10 @@ def get_model(config):
     else:
         raise NotImplementedError('Undefined model type')
 
-def initialize_from_env(eval_test=False):
+def initialize_from_env(name, eval_test=False):
   if "GPU" in os.environ:
     set_gpus(int(os.environ["GPU"]))
 
-  name = sys.argv[1]
   print("Running experiment: {}".format(name))
 
   if eval_test:
@@ -51,7 +49,6 @@ def flatten(l):
   return [item for sublist in l for item in sublist]
 
 def set_gpus(*gpus):
-  # pass
   os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(str(g) for g in gpus)
   print("Setting CUDA_VISIBLE_DEVICES to: {}".format(os.environ["CUDA_VISIBLE_DEVICES"]))
 
